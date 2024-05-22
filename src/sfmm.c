@@ -49,17 +49,24 @@ void *sf_malloc(size_t size) {
     //last 8 bytes of heap must contain epilogue
 }
 
-void sf_free(void *pp) {
-    //footer needs to be set in case of free block
-    printf("inside sf_free\n");
-    int val = check_free(pp);
-    if(val==-1) abort();
+void sf_free(void *ptr) {
+    if (ptr == NULL) return;
 
-    //search quick list
-    //if ql is full, flush the ql and add to ml (coalesce if possible)
-    //add current block to ql after ql is flushed
+    sf_block *block = (sf_block *)((char *)ptr - offsetof(sf_block, body.payload));
+    if (!valid_block(block)) {
+        abort();
+    }
 
+    size_t size = get_block_size(block);
+    block = coalesce(block);
+
+    set_header(block, size, 0, get_prev_alloc(block), 0);
+    set_footer(block, size);
+
+    int index = find_free_list(size);
+    insert_into_free_list(block, index);
 }
+
 
 int check_free(void *pp){
     if(pp==NULL) return -1;
@@ -81,12 +88,33 @@ int check_free(void *pp){
 
 }
 
-void *sf_realloc(void *pp, size_t rsize) {
-    int val = check_free(pp);
-    if(val==-1) abort();
-    if(rsize==0) return NULL;
-    return NULL;
+void *sf_realloc(void *ptr, size_t size) {
+    if (ptr == NULL) return sf_malloc(size);
+    if (size == 0) {
+        sf_free(ptr);
+        return NULL;
+    }
 
+    sf_block *block = (sf_block *)((char *)ptr - offsetof(sf_block, body.payload));
+    if (!valid_block(block)) {
+        sf_errno = EINVAL;
+        return NULL;
+    }
+
+    size_t current_size = get_block_size(block);
+    size = align_size(size + HEADER_SIZE);
+
+    if (current_size >= size) {
+        split_block(block, size);
+        return ptr;
+    } else {
+        void *new_ptr = sf_malloc(size);
+        if (new_ptr != NULL) {
+            memcpy(new_ptr, ptr, current_size - HEADER_SIZE);
+            sf_free(ptr);
+        }
+        return new_ptr;
+    }
 }
 
 double sf_fragmentation() {
