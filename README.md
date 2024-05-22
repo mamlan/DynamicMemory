@@ -1,23 +1,4 @@
-# Homework 3 Dynamic Memory Allocator - CSE 320 - Spring 2024
-#### Professor Eugene Stark
 
-### **Due Date: Friday 3/22/2024 @ 11:59pm**
-
-
-We **HIGHLY** suggest that you read this entire document, the book chapter,
-and examine the base code prior to beginning. If you do not read the entire
-document before beginning, you may find yourself doing extra work.
-
-> :scream: Start early so that you have an adequate amount of time to test
-your program!
-
-> :scream: The functions `malloc`, `free`, `realloc`, `memalign`, `calloc`,
-> etc., are **NOT ALLOWED** in your implementation. If any of these functions,
-> or any other function with similar functionality is found in your program,
-> you **will receive a <font color="red">ZERO</font>**.
-
-**NOTE:** In this document, we refer to a word as 2 bytes (16 bits) and a memory
-row as 4 words (64 bits). We consider a page of memory to be 8192 bytes (8 KB)
 
 # Introduction
 
